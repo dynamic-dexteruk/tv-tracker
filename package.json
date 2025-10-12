@@ -1,0 +1,1 @@
+{"name":"tv-tracker","version":"1.0.1","description":"Home-hosted TV show tracker using TVmaze + SQLite","main":"app.js","scripts":{"start":"node app.js","dev":"nodemon app.js"},"dependencies":{"axios":"^1.7.7","ejs":"^3.1.10","express":"^4.19.2","express-ejs-layouts":"^2.5.1","sqlite3":"^5.1.7"},"devDependencies":{"nodemon":"^3.1.7"}}

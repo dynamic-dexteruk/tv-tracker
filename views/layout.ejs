@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title><%= typeof title !== 'undefined' ? title : 'TV Tracker' %></title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header>
+  <div class="header-left">
+    <a class="btn secondary" href="https://home-hub.dynamicdexter.com/">🏠 Home Hub</a>
+  </div>
+
+  <div class="header-center">
+    <a class="brand" href="/">📺 TV Tracker</a>
+  </div>
+
+  <div class="header-right">
+    <a class="btn" href="/add">+ Add show</a>
+  </div>
+</header>
+<main>
+<%- body %>
+</main>
+<script src="/app.js"></script>
+</body>
+</html>

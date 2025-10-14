@@ -1,0 +1,27 @@
+<h2>Multiple results for “<%= query %>”</h2>
+<p>Select which version to add:</p>
+
+<ul class="search-results">
+  <% results.forEach(r => { const s = r.show; %>
+    <li class="result">
+      <form method="post" action="/add" style="display:inline;">
+        <input type="hidden" name="showId" value="<%= s.id %>">
+        <button class="btn" type="submit">
+          Add <%= s.name %>
+          <% if (s.premiered) { %> (<%= s.premiered.slice(0,4) %>) <% } %>
+        </button>
+      </form>
+      <span class="muted">
+        <% if (s.network) { %> <%= s.network.name %> <% } %>
+        <% if (s.status) { %> • <%= s.status %> <% } %>
+      </span>
+    </li>
+  <% }) %>
+</ul>
+
+<style>
+.search-results{list-style:none;padding:0}
+.result{margin-bottom:8px}
+.result form{display:inline-block;margin-right:8px}
+</style>
+

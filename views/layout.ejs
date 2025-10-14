@@ -17,7 +17,15 @@
   </div>
 
   <div class="header-right">
-    <a class="btn" href="/add">+ Add show</a>
+    <% if (user) { %>
+      <span class="muted" style="margin-right:8px;">Signed in as <strong><%= user.username %></strong></span>
+      <form method="post" action="/auth/logout" style="display:inline;">
+        <button class="btn secondary" type="submit">Log out</button>
+      </form>
+    <% } else { %>
+      <a class="btn secondary" href="/auth/login">Log in</a>
+    <% } %>
+    <a class="btn" href="/add" style="margin-left:8px;">+ Add show</a>
   </div>
 </header>
 <main>

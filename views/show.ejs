@@ -1,45 +1,84 @@
-<div class="page-actions">
-  <a href="/" class="btn secondary">← Back</a>
-  <form method="post" action="/show/<%= show.id %>/delete" onsubmit="return confirm('Delete this show and all its episodes from your tracker? This cannot be undone.');">
-    <button class="btn danger" type="submit">Delete show</button>
-  </form>
-</div>
+<main class="page">
+  <header class="show-head">
+    <a class="btn secondary" href="/">← Back</a>
+    <h1><%= show.title %></h1>
+    <div class="muted"><%= overall.watched %> / <%= overall.total %> watched • <%= overall.pct %>% complete</div>
+  </header>
 
-<div class="show-header">
-  <h2><%= show.name %></h2>
-  <div class="stats" id="stats" data-total="<%= total %>">
-    <span>
-      <strong id="watchedCount"><%= watched %></strong> /
-      <span id="totalCount"><%= total %></span> watched
-    </span>
-    <span> | </span>
-    <span><strong id="pctCount"><%= pct %></strong>% complete</span>
-  </div>
-</div>
+  <% if (!seasons.length) { %>
+    <div class="empty">No episodes found for this show.</div>
+  <% } %>
 
-<table class="episodes">
-  <thead>
-    <tr>
-      <th>Watched</th>
-      <th>S</th>
-      <th>E</th>
-      <th>Title</th>
-      <th>Airdate</th>
-      <th>Runtime</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% episodes.forEach(ep => { %>
-      <tr data-episode-id="<%= ep.id %>" class="<%= ep.watched ? 'watched' : '' %>">
-        <td>
-          <input type="checkbox" class="toggle" <%= ep.watched ? 'checked' : '' %> />
-        </td>
-        <td><%= ep.season || '' %></td>
-        <td><%= ep.number || '' %></td>
-        <td><%= ep.title %></td>
-        <td><%= ep.airdate || '' %></td>
-        <td><%= ep.runtime ? ep.runtime + 'm' : '' %></td>
-      </tr>
-    <% }) %>
-  </tbody>
-</table>
+  <% seasons.forEach(s => { %>
+    <section class="season">
+      <details open>
+        <summary class="season-summary">
+          <span>Season <%= s.seasonNumber %></span>
+          <span class="season-progress"><%= s.watched %> / <%= s.total %> watched • <%= s.pct %>%</span>
+        </summary>
+
+        <ul class="episodes">
+          <% s.episodes.forEach(ep => { %>
+            <li class="episode <%= ep.watched ? 'watched' : '' %>" data-epid="<%= ep.id %>">
+              <label class="ep-left">
+                <input type="checkbox"
+                       class="watch-toggle"
+                       data-epid="<%= ep.id %>"
+                       <%= ep.watched ? 'checked' : '' %> />
+                <span class="ep-code">S<%= String(s.seasonNumber).padStart(2,'0') %>E<%= String(ep.number).padStart(2,'0') %></span>
+                <span class="ep-name"><%= ep.name %></span>
+              </label>
+              <span class="ep-right muted"><%= ep.airdate || '' %></span>
+            </li>
+          <% }) %>
+        </ul>
+      </details>
+    </section>
+  <% }) %>
+</main>
+
+<script>
+// Toggle watched, update row and season header stats without reload
+document.querySelectorAll('.watch-toggle').forEach(cb => {
+  cb.addEventListener('change', async (e) => {
+    const epId = e.target.dataset.epid;
+    const checked = e.target.checked;
+
+    try {
+      const res = await fetch('/episodes/toggle', {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json' },
+        body: JSON.stringify({ episodeId: epId, watched: checked })
+      });
+      const j = await res.json();
+      if (!res.ok || j.error) throw new Error(j.error || 'Update failed');
+
+      // Mark row
+      const li = e.target.closest('li.episode');
+      if (li) li.classList.toggle('watched', checked);
+
+      // Update the season summary numbers in this <details>
+      const details = e.target.closest('details');
+      if (details) {
+        const watchedNow = details.querySelectorAll('li.episode.watched').length;
+        const total = details.querySelectorAll('li.episode').length;
+        const pct = total ? Math.round((watchedNow/total)*100) : 0;
+        const summary = details.querySelector('.season-summary .season-progress');
+        if (summary) summary.textContent = `${watchedNow} / ${total} watched • ${pct}%`;
+      }
+
+      // Update overall header too
+      const allWatched = document.querySelectorAll('li.episode.watched').length;
+      const allTotal = document.querySelectorAll('li.episode').length;
+      const allPct = allTotal ? Math.round((allWatched/allTotal)*100) : 0;
+      const head = document.querySelector('.show-head .muted');
+      if (head) head.textContent = `${allWatched} / ${allTotal} watched • ${allPct}% complete`;
+    } catch (err) {
+      alert(err.message || 'Failed to update.'); 
+      e.target.checked = !checked; // revert
+    }
+  });
+});
+</script>
+
+

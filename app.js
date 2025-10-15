@@ -120,7 +120,13 @@ async function ensureShow(tvmazeId) {
 
 // Home: list shows with overall progress
 app.get('/', async (req, res) => {
-  const shows = await all(`SELECT * FROM shows ORDER BY title COLLATE NOCASE ASC`);
+  const shows = await all(`
+  SELECT id, tvmaze_id,
+         COALESCE(title, name) AS title,
+         image, summary
+  FROM shows
+  ORDER BY COALESCE(title, name) COLLATE NOCASE ASC
+`);
   // compute progress for each show
   const rows = [];
   for (const s of shows) {
@@ -239,3 +245,4 @@ initDb()
     console.error('DB init failed:', err);
     process.exit(1);
   });
+
